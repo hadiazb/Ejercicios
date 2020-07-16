@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rick and Morty</title>
+  </head>
+​
+  <body>
+    <button onclick="pintar()">Pintar</button>
+    <button onclick="pintarLimpio()">PintarLimpio</button>
+  </body>
+  <script>
+    const baseURL = 'https://rickandmortyapi.com/api/character/'
+    async function pintar() {
+      //Englobo todo en un try catch para "cachar" cualquier error, ahorita no hago nada
+      try {
+        //Aquí estoy haciendo un "await anidado" para de una vez la variable "res" sea tipo JSON
+        const res = await (await fetch(baseURL)).json()
+        //Saco la propiedad "results" que tiene nuestro Array de personajes
+        const characters = res.results
+        //Itero en los personajes uno por uno, esperando la información con await
+        for (let i = 0; i < characters.length; i++) {
+          // Esto es un operador ternario, puedes usar un if/else normal si lo prefieres. Lo hago porque en el personaje con id:19 la "location.url" viene vacía y da error, entonces antes de hacer petición verifico si tiene url, si no la tiene le asigno un objeto "{ dimension: 'not found' }" a location.
+          const location = characters[i].location.url
+            ? await (await fetch(characters[i].location.url)).json()
+            : { dimension: 'not found' }
+          console.log(
+            `${characters[i].id} | ${characters[i].name} | ${characters[i].status} | ${characters[i].gender} | ${location.dimension}`
+          )
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    //Esta forma usa on "for of" de ES6 que es compatible prácticamente en todos los navegadores modernos https://caniuse.com/#search=for%20of
+    // Me parece queda más limpio.
+    async function pintarLimpio() {
+      try {
+        const res = await (await fetch(baseURL)).json()
+        const characters = res.results
+        //Así ya no tenemos que especificar posición en el arreglo, vamos sacando objeto por objeto.
+        for (character of characters) {
+          const location = character.location.url
+            ? await (await fetch(character.location.url)).json()
+            : { dimension: 'not found' }
+          console.log(
+            `${character.id} | ${character.name} | ${character.status} | ${character.gender} | ${location.dimension}`
+          )
+        }
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  </script>
+</html>
